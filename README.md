@@ -1,139 +1,161 @@
-🌊 OceanTrace — Unified Maritime Hazard Intelligence Platform
+🌊 OceanTrace (Ocean-Trace-v2.0)
 
-AI-Powered Detection, Physics-Based Drift Forecasting & Response for Oil Spills and Antarctic Icebergs
+Show Image Show Image Show Image Show Image Show Image Show Image Show Image
 
+Unified Satellite SAR Hazard Intelligence: Oil Spill Detection & Vessel Attribution + Antarctic Iceberg Trajectory & Navigation Decision Support
 
-
-Built for Smart India Hackathon 2026 Problem Statement: SIH26059 — AI-Enabled Antarctic Sea-Ice, Iceberg Trajectory, and Navigation Decision Support System Organization: Ministry of Earth Sciences (MoES) · Department: National Centre for Polar and Ocean Research (NCPOR) · Category: Software · Theme: Transportation & Logistics
+Smart India Hackathon 2026 — Problem Statement SIH26059, Ministry of Earth Sciences (MoES) / National Centre for Polar and Ocean Research (NCPOR)
 
 🧭 About the Project
 
-OceanTrace is a unified, satellite-driven maritime hazard intelligence platform. It was originally built as a dedicated oil-spill detection and vessel-attribution system, and has since been extended into a broader multi-hazard ocean monitoring platform that also detects Antarctic icebergs, forecasts their drift, and recommends safe navigation routes for research vessels — all from the same core satellite radar (SAR) pipeline.
+OceanTrace is a full-stack maritime hazard intelligence platform built around one core idea: a satellite radar (SAR) image doesn't come pre-labeled with what hazard it's showing you. It detects marine oil spills and Antarctic icebergs from the same Sentinel-1 SAR pipeline, then routes each to the response it actually needs — backward physics reconstruction and AIS vessel attribution for oil spills, forward drift forecasting and safe-route planning for icebergs.
 
-The core insight behind combining these two problems: Oil slicks and icebergs are both radar-detectable ocean anomalies that are notoriously easy to confuse with each other in SAR imagery — both dampen radar backscatter and appear as similar dark/anomalous patches. Any robust SAR-based hazard detector already has to solve the problem of telling them apart. Rather than building two isolated, single-purpose tools, OceanTrace turns this shared discrimination problem into a single platform: one satellite feed, one detection pipeline, two hazard responses.
+The problem it solves: When a vessel illegally discharges oil or suffers an accident at sea, the slick drifts with currents and wind — by the time a satellite captures it, the responsible ship may be hundreds of kilometers away. Separately, research vessels navigating Antarctic waters rely on infrequent, low-resolution ice charts instead of a live, ship-specific predictive hazard view. Both are, at their core, the same unsolved problem: a radar anomaly is detected, and nobody turns that detection into a fast, actionable, evidence-backed decision.
 
-                    🛰️  Sentinel-1 SAR Image (any pass, any region)
-                                 │
-                                 ▼
-        ┌─────────────────────────────────────────────────────┐
-        │  MODULE 1 — Unified Hazard Detection                  │
-        │  • ResNet-34 U-Net (PyTorch) — anomaly segmentation   │
-        │  • Hazard classifier — Oil / Iceberg / False Alarm    │
-        └─────────────────────────────────────────────────────┘
-                                 │
-                 ┌───────────────┴───────────────┐
-                 ▼ hazard_type = "oil"            ▼ hazard_type = "iceberg"
-   ┌───────────────────────────┐     ┌───────────────────────────────────┐
-   │ MODULE 2 — Backward         │     │ MODULE 2 — Forward                  │
-   │ Drift Hindcast (OpenDrift)  │     │ Drift Forecast (OpenDrift)          │
-   │ → Spill origin & time       │     │ → 24–72h predicted iceberg position │
-   └───────────────────────────┘     └───────────────────────────────────┘
-                 │                                 │
-                 ▼                                 ▼
-   ┌───────────────────────────┐     ┌───────────────────────────────────┐
-   │ MODULE 3 — AIS Vessel       │     │ MODULE 3 — Route-Risk Scoring       │
-   │ Attribution (5-factor       │     │ (hazard-proximity, uncertainty       │
-   │ transparent evidence score) │     │ ellipse breach, risk verdict)        │
-   └───────────────────────────┘     └───────────────────────────────────┘
-                 │                                 │
-                 ▼                                 ▼
-    Ranked suspect vessel list      ┌───────────────────────────────────┐
-    + forensic PDF report            │ MODULE 4 — Safe-Path Planning (NEW) │
-                                      │ NetworkX graph routing around       │
-                                      │ forecasted iceberg hazard zones     │
-                                      └───────────────────────────────────┘
-                                                   │
-                                                   ▼
-                                     Recommended safest navigation route + Pdf report for future analysis 
-**🤔 Why We Combined Two Problem Statements Into One Platform**
+OceanTrace automates both chains — detect → classify → physically model → respond — through a physics-informed, evidence-based pipeline that produces transparent, auditable output rather than an opaque black-box verdict.
 
-This isn't two projects stitched together for convenience — it's a deliberate architectural decision grounded in a real technical fact:
+                    🛰️ Sentinel-1 SAR Image
+                              │
+                              ▼
+        ┌──────────────────────────────────────────┐
+        │ MODULE 1 — Unified Hazard Detection        │
+        │ • ResNet-34 U-Net (PyTorch, pretrained)    │ ──► detection.json
+        │ • Hazard classifier: Oil / Iceberg / None  │     (Polygon, Area, Confidence, hazard_type)
+        │ • Look-alike false-positive filtering      │
+        └──────────────────────────────────────────┘
+                              │
+              ┌───────────────┴────────────────┐
+              ▼ hazard_type = "oil"             ▼ hazard_type = "iceberg"
+┌──────────────────────────────┐   ┌──────────────────────────────────┐
+│ MODULE 2 — Backward Drift     │   │ MODULE 2 — Forward Drift          │
+│ Reconstruction (OpenDrift)    │   │ Forecast (OpenDrift)              │
+│ • Real CMEMS current + ERA5   │   │ • 24–72h predicted position       │
+│ • Reverse-time simulation     │   │ • 68%/95% uncertainty ellipses    │
+└──────────────────────────────┘   └──────────────────────────────────┘
+              │                                  │
+              ▼                                  ▼
+┌──────────────────────────────┐   ┌──────────────────────────────────┐
+│ MODULE 3 — AIS Vessel          │   │ MODULE 3 — Route-Risk Scoring      │
+│ Attribution                    │   │ • Hazard-proximity + ellipse       │
+│ • 5-factor evidence scoring    │   │   breach detection                 │
+└──────────────────────────────┘   └──────────────────────────────────┘
+              │                                  │
+              ▼                                  ▼
+  📄 Forensic PDF Report              ┌──────────────────────────────────┐
+  (SHA-256 sealed, QR-verifiable)      │ MODULE 4 — Safe-Path Planning      │
+              │                        │ • NetworkX graph routing around    │
+              ▼                        │   forecasted hazard zones          │
+  🗄️ PostgreSQL Incident & Vessel     └──────────────────────────────────┘
+      Registry                                     │
+                                                    ▼
+                                      Recommended safest navigation route + 🗄️ saving all safest routes for continuing monitoring for future routes trajectories
 
-Shared false-positive problem, solved once. In SAR-based oil-spill detection literature, icebergs are explicitly documented as one of the classic "look-alikes" that cause false positives — both oil slicks and icebergs dampen radar backscatter similarly. Our original oil-spill detector already had to learn to filter out iceberg-like signatures as noise. We formalized that same discrimination boundary into a full second hazard class, turning a filter into a detector.
-Shared physics engine, used as designed. OpenDrift — the Lagrangian ocean-physics engine we use for drift modeling — is explicitly built to model the trajectory of any floating object (oil, icebergs, debris, search-and-rescue targets), not oil alone. Running it backward for oil-origin hindcasting and forward for iceberg-drift forecasting is the engine's intended dual use, not a workaround.
-Shared operational need. Coast guards, polar research agencies, and port authorities don't want five disconnected single-purpose tools watching the same ocean. A unified maritime hazard awareness platform — one satellite feed, one pipeline, automatic routing to the correct response — mirrors how real maritime surveillance centers are expected to operate.
-A growing real-world overlap. As Arctic and Antarctic sea routes open up due to retreating ice, the same vessels navigating increasingly ice-exposed waters are also the ones at risk of causing or encountering oil spills in environmentally sensitive regions — the two hazards are converging in the same operational theatre, not just in our codebase.
+🤔 Why Oil Spills and Icebergs, in One Platform
 
-In short: detect any SAR anomaly → classify what it actually is → predict where it's going → trigger the correct response (who's responsible, for oil; how to navigate safely, for ice).
+This isn't two hackathon projects stitched together — it's a deliberate decision grounded in a real technical fact.
 
-💡 Why This Combination Actually Matters
+Shared false-positive problem, solved once. In SAR literature, icebergs are a documented "look-alike" for oil slicks — both dampen radar backscatter similarly. A detector that already has to filter iceberg-like noise out of oil detection is one retraining step away from recognizing icebergs as a hazard in their own right, instead of discarding that signal.
+Shared physics engine, used as designed. OpenDrift models the trajectory of any floating object — oil, icebergs, debris — not oil alone. Running it backward for spill-origin hindcasting and forward for iceberg-drift forecasting is its intended dual use.
+Shared operational need. Coast guards and polar agencies don't want five disconnected single-purpose tools watching the same ocean — they want one feed, one pipeline, the correct response triggered automatically.
+A converging real-world risk. As polar ice retreats and new shipping lanes open, the same vessels face both oil-spill risk and iceberg risk in the same waters. A tool built for only one hazard ages badly.
 
-It's easy to assume we combined these two problems just to save time. The honest truth is simpler, and a little more interesting: the ocean doesn't separate its hazards into neat categories, and neither should the systems that watch it.
-
-A satellite doesn't know, ahead of time, whether the dark patch it just photographed is oil or ice. A ship's crew doesn't get to choose which hazard they'll encounter on a given voyage. The same radar pass over the Southern Ocean could just as easily reveal a drifting iceberg as it could an illegal discharge near a fishing fleet. Treating these as two unrelated problems, each needing its own from-scratch system, ignores how similar the first, hardest step — "what is this thing I'm looking at?" — really is for both.
-
-What we gained by combining them:
-
-A system that's harder to fool, not just twice as big. Teaching one model to tell oil apart from ice apart from ordinary calm water makes it better at all three distinctions at once — the kind of robustness that's genuinely difficult to achieve when you only ever show a model one hazard type.
-Less wasted engineering, more depth where it counts. Instead of splitting our limited hackathon time across two completely separate codebases, we reused a proven detection-and-drift foundation and spent the time we saved on the parts that are genuinely new and hard — the iceberg route-risk scoring and the safe-path planning engine.
-A platform that scales with the problem, not around it. Climate change is quietly merging these two risks in the real world — as polar ice retreats and new shipping lanes open, more vessels will be operating in waters where both oil-spill risk and iceberg risk coexist. A tool built for only one of them will age badly. A tool built to recognize any ocean hazard and route the right response won't.
-
-The human impact, plainly stated:
-
-For a ship's crew navigating near Antarctica, this is the difference between relying on a weekly ice chart and having a live, forecasted, ship-specific warning before they're ever close enough to be in danger.
-For a coastal community whose fishing grounds get hit by an oil spill, this is the difference between a slick that's seen and forgotten, and one that's traced back to an actual, accountable vessel.
-For polar researchers and policymakers, it's a single source of evidence — detection, physics, and explainable reasoning — that doesn't ask them to trust a black box.
-
-We didn't build two projects and staple them together. We built one answer to a question that's bigger than either hazard alone: how do we give the people watching our oceans a system that sees what's actually out there, and tells them, honestly and clearly, what to do about it?
+The human impact: a ship's crew near Antarctica gets a live, ship-specific warning instead of a weekly ice chart. A coastal community hit by a spill gets a traceable, accountable vessel instead of a slick that's seen and forgotten. Researchers and policymakers get one explainable evidence trail instead of a black box.
 
 🎯 Target Users
-User	Iceberg Capability	Oil Spill Capability
+User	Iceberg Use Case	Oil Spill Use Case
 Ministry of Earth Sciences / NCPOR / Indian Antarctic Programme	Live sea-ice and iceberg hazard tracking with drift forecasts and safe-route recommendations for Bharati & Maitri resupply voyages	—
-Research Vessel Captains & Polar Expedition Planners	Voyage-specific, explainable navigation risk scoring and NetworkX-based safe-path planning around forecasted iceberg hazard zones	—
-Maritime & Polar Researchers	Iceberg drift tracking data with direct scientific value for glaciology and ice-shelf dynamics research	Reproducible SAR + physics-modeling architecture extensible to other ocean-object tracking problems
-Coast Guards & Maritime Surveillance Authorities (ICG / USCG / EMSA)	Extendable to polar/sub-polar surveillance zones as ice-covered shipping routes expand	Detect offshore pollution events and generate forensic-grade evidence dossiers
-Environmental Protection Agencies / Pollution Control Boards	—	Hold polluters accountable for illegal bilge dumps
-Port & Harbor Authorities	—	Monitor near-shore anchorage zones for compliance
-
+Research Vessel Captains & Expedition Planners	Voyage-specific, explainable risk scoring and safe-path planning around forecasted iceberg zones	—
+Coast Guards & Maritime Surveillance Authorities (ICG / USCG / EMSA)	Extendable to polar/sub-polar surveillance as ice-covered routes expand	Rapidly detect offshore pollution events and generate forensic-grade evidence dossiers
+Environmental Protection Agencies / Pollution Control Boards	—	Hold polluters accountable for illegal bilge dumps and quantify environmental damage
+Port & Harbor Authorities	—	Monitor near-shore anchorage zones and verify vessel compliance
+Maritime & Polar Researchers	Iceberg drift data with direct value for glaciology research	Reproducible architecture combining Earth Observation data with Lagrangian ocean-physics modeling
 ✨ Key Features
-Shared / Core Platform
-🛰️ Deep Learning SAR Segmentation — ResNet-34 U-Net (transfer-learned, PyTorch) segments radar anomalies from Sentinel-1 imagery.
-🧠 Hazard Type Classifier — a dedicated classifier distinguishes detected anomalies into Oil Slick / Iceberg / False Alarm, trained on real labeled SAR data (Statoil/C-CORE iceberg dataset).
-🔄 Unified Drift Engine — OpenDrift-based Lagrangian physics, run backward (oil origin) or forward (iceberg forecast) depending on hazard type.
-💻 Interactive Full-Stack Console — Vite + Leaflet-style geospatial dashboard, FastAPI backend, PostgreSQL + PostGIS storage.
-Oil Spill Path
-🚢 Transparent Multi-Factor Vessel Attribution — 5 independently-weighted, explainable signals (spatial, temporal, trajectory, drift-consistency, speed/course) rank candidate vessels — no black-box score.
-🔐 Court-Ready Forensic PDF Export — client-side SHA-256 hash + QR-verifiable case seal.
-Iceberg Path
-📍 24–72 Hour Drift Forecasting — forward Lagrangian simulation with 68%/95% uncertainty ellipses per timestep.
-⚠️ Route-Risk Scoring — evaluates a ship's planned route against forecasted iceberg hazard zones, flags segments Low/Medium/High risk with a plain-language explanation.
-🧭 Safe-Path Planning (Module 4) — NetworkX graph-based pathfinding recommends the lowest-risk route around multiple forecasted iceberg hazards, with distance/detour and clearance metrics.
-🏗️ Architecture & Design Principles
-Additive, non-destructive extension — The iceberg capability was built entirely as new files and new branches alongside the original oil-spill modules. No existing oil-spill model weights, training pipelines, or attribution logic were modified; all original test suites pass unchanged.
-Contract-driven branching — A single hazard_type field in the detection contract ("oil" / "iceberg" / "false_alarm") determines which downstream path runs, keeping both hazard pipelines independently testable.
-Real data, not synthetic — Oil-spill model trained on a published Sentinel-1 SAR benchmark and validated against a real post-Hurricane-Ida Gulf of Mexico scene; iceberg classifier trained on the real Statoil/C-CORE SAR-labeled dataset.
-Explainability over black-box confidence — Both the vessel-attribution score and the route-risk score are transparent, auditable, and signal-by-signal explainable — critical for any real investigative, legal, or navigational safety use.
 
+🛰️ Deep Learning SAR Segmentation — A ResNet-34 U-Net (transfer-learned from ImageNet, fine-tuned on real Sentinel-1 SAR imagery) trained with a custom Hybrid Focal Tversky loss to handle extreme class imbalance and isolate true hazards from look-alikes (calm-water zones, algal blooms, coastal wetlands).
+
+🧠 Hazard-Type Classification — A dedicated classifier, trained on real labeled SAR data (Statoil/C-CORE iceberg dataset), tags each detected anomaly as Oil Slick, Iceberg, or False Alarm — routing it to the correct downstream pipeline.
+
+🔄 Unified Drift Engine — OpenDrift-based Lagrangian particle simulation, run backward (real CMEMS current + ERA5 wind) to reconstruct an oil spill's origin, or forward to forecast an iceberg's drift 24–72 hours ahead with 68%/95% confidence ellipses.
+
+🚢 Transparent Multi-Factor Vessel Attribution — Evaluates each candidate vessel across five independently-weighted, explainable signals (spatial proximity, temporal alignment, trajectory consistency, drift-path match, speed/course anomaly) instead of an opaque black-box score.
+
+🧭 Iceberg Route-Risk Scoring & Safe-Path Planning — Scores a ship's planned route against forecasted iceberg hazard zones (Low/Medium/High, with plain-language explanation), and a NetworkX-based pathfinding engine recommends the lowest-risk route around multiple icebergs.
+
+💻 Interactive Full-Stack Web Console — A modern geospatial dashboard with an interactive map, slick/iceberg overlay visualization, drift particle rendering, ranked vessel trajectories or recommended routes, live analytics, and printable/exportable forensic reports.
+
+🔐 Court-Ready Forensic PDF Export — Client-side generated incident report with a SHA-256 tamper-evidence hash and a QR-verifiable case seal — no extra backend infrastructure required.
+
+🗄️ Persistent Incident Database — Every detection, attribution, and route-risk report is stored in PostgreSQL, with automatic vessel-ownership enrichment via a maritime registry lookup.
+
+🔌 Standardized REST API — Complete FastAPI service with CORS support, dual JSON/file-upload input, and interactive OpenAPI documentation (/docs).
+
+🏗️ Architecture & Design Principles
+Additive, non-destructive extension — The iceberg capability was built entirely as new files and new branches alongside the original oil-spill modules; no existing oil-spill model weights, training pipelines, or attribution logic were modified, and all original test suites pass unchanged.
+Modular, contract-driven pipeline — Each module is independently developed, tested, and owned, with a formally versioned JSON schema (contracts/CONTRACTS.md) defining the handoff between them. A single hazard_type field determines which downstream path runs.
+Real data, not synthetic — Oil-spill model trained on a published Sentinel-1 SAR benchmark and validated against a real post-Hurricane-Ida Gulf of Mexico scene; iceberg classifier trained on the real Statoil/C-CORE SAR-labeled dataset; attribution tested against real NOAA MarineCadastre AIS records (264,646 points, 396 vessels).
+Explainability over black-box confidence — Both vessel attribution and route-risk scoring use transparent, weighted evidence rather than an opaque ML classifier, so every result can be justified signal-by-signal.
+Honest engineering — False-positive suppression (5 km coastal exclusion buffer + minimum polygon area filtering) was validated by reducing a real scene from 69,176 km² of false positives down to a confirmed, honest zero open-water detections.
+🔒 Security
+No secrets in source control — credentials and API keys are read from environment variables (.env, excluded via .gitignore); only .env.example templates with placeholder values are committed.
+Parameterized database queries — all PostgreSQL access uses parameterized statements, not string-formatted SQL, to prevent injection.
+Input validation at the API boundary — FastAPI endpoints use Pydantic models to validate incoming request data before it reaches any detection, drift, attribution, or routing logic.
+File upload validation — uploaded SAR imagery is checked for valid format/content before processing.
+CORS scoped for deployment — restricted to the deployed frontend origin in production rather than left fully open.
+Tamper-evident reporting — forensic PDF exports are sealed with a client-side SHA-256 hash and QR-verifiable case ID.
 🚀 Setup & Run Guide
+
+Follow these exact steps to run the complete project on Windows, macOS, or Linux.
+
 📋 Prerequisites
-Git, Python 3.10+, Node.js 18+ & npm
-PostgreSQL (optional — required only for persistent incident/route storage)
+Git (Download)
+Python 3.10+ (Download)
+Node.js 18+ & npm (Download)
+PostgreSQL (optional — required only for persistent incident storage)
 Step 1 — Clone the Repository
 bash
 git clone https://github.com/senvidit4-alt/Ocean-Trace-v2.0.git
 cd Ocean-Trace-v2.0
-Step 2 — Backend Setup
+Step 2 — Backend Setup (FastAPI & AI Pipeline)
 
 Windows (PowerShell):
 
 powershell
+# 1. Create Python virtual environment
 python -m venv venv
+
+# 2. Allow script execution (if PowerShell restricts scripts)
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+# 3. Activate virtual environment
 .\venv\Scripts\Activate.ps1
+
+# 4. Install all Python dependencies
 pip install -r requirements.txt
+
+# 5. Start the backend server
 python main.py
 
 Linux / macOS:
 
 bash
+# 1. Create Python virtual environment
 python3 -m venv venv
+
+# 2. Activate virtual environment
 source venv/bin/activate
+
+# 3. Install all Python dependencies
 pip install -r requirements.txt
+
+# 4. Start the backend server
 python3 main.py
 
 ✅ Backend live at: http://localhost:8000 📖 Interactive Swagger Docs: http://localhost:8000/docs 🩺 Health Check: http://localhost:8000/api/health
 
-Step 3 — Frontend Setup
+Step 3 — Frontend Setup (Interactive Web Console)
+
+Open a new terminal window:
+
 bash
 cd ocean-trace-frontend
 npm install
@@ -146,7 +168,11 @@ bash
 cp .env.example .env
 # Fill in your PostgreSQL credentials in .env
 python report_db.py
+# Initializes the schema
 🧪 Automated Verification & Testing
+
+Run the full integration test suite (from repo root, with venv activated):
+
 bash
 python test_backend_api.py
 
@@ -161,15 +187,21 @@ Run the full pipeline end-to-end via CLI (oil-spill path by default):
 bash
 python run_pipeline.py --input-synthetic --output-dir outputs
 
-Run the iceberg path (manual override until the hazard classifier is fully wired):
+Run the iceberg path:
 
 bash
 python run_pipeline.py --hazard-type iceberg --output-dir outputs
 📁 Repository Structure
 Ocean-Trace-v2.0/
 ├── backend/
-│   └── main.py                      # FastAPI endpoints — oil-spill + iceberg routes
+│   ├── __init__.py
+│   └── main.py                      # FastAPI REST API endpoints — oil-spill + iceberg routes
 ├── ocean-trace-frontend/            # Interactive Web UI Console
+│   ├── index.html                   # Main UI layout & geospatial map
+│   ├── src/styles.css               # Glassmorphism & dark-mode styling
+│   ├── vite.config.js               # Vite server & proxy configuration
+│   ├── .env.example                 # Frontend environment variable template
+│   └── package.json
 ├── modules/
 │   ├── 01_detection/
 │   │   └── src/
@@ -189,38 +221,36 @@ Ocean-Trace-v2.0/
 │       └── src/
 │           └── safe_path.py         # NetworkX safe-path planning
 ├── data/
-│   ├── AIS_*.csv                    # Real Gulf of Mexico AIS telemetry
+│   ├── AIS_*.csv                    # Real Gulf of Mexico AIS telemetry dataset
 │   └── iceberg_dataset/
 │       └── train.json               # Statoil/C-CORE iceberg SAR training data
-├── contracts/                       # JSON schemas for inter-module handoffs
-├── docs/                            # Architecture specifications
-├── unet_spill_best.pth              # Pretrained oil-spill U-Net weights
+├── contracts/                       # JSON schemas defining inter-module handoffs
+├── docs/                            # Architecture specifications & API documentation
+├── unet_spill_best.pth              # Pre-trained ResNet-34 U-Net weights
 ├── iceberg_classifier_best.pth      # Trained iceberg hazard classifier
+├── report_db.py                     # PostgreSQL incident/vessel storage interface
 ├── run_pipeline.py                  # Full CLI pipeline runner — branches by hazard_type
-├── test_backend_api.py              # Integration test suite
-├── requirements.txt
-├── .env.example                     # Environment variable template (no real secrets)
-└── main.py
-
-🔒 Note: .env files, API keys, and database credentials are never committed to this repository — only .env.example templates are tracked. See Security below.
-
+├── test_backend_api.py              # Integration test suite for backend API
+├── requirements.txt                 # Production Python dependencies
+├── .env.example                     # Backend environment configuration template
+└── main.py                          # Root entrypoint (`python main.py`)
 ⚙️ REST API Endpoints
 Method	Endpoint	Description
-GET	/health	Service health status
-POST	/detect-spill	Module 1 — unified SAR detection, returns hazard_type
-POST	/trace-origin	Module 2 (oil) — backward hindcast
-POST	/attribute-vessel	Module 3 (oil) — AIS vessel attribution
-POST	/score-route-risk	Module 3 (iceberg) — route-risk scoring (new)
-POST	/find-safe-path	Module 4 (iceberg) — safe-path planning (new)
-POST	/run-full-pipeline	Full pipeline — auto-branches by detected hazard_type
+GET	/health or /api/health	Service health status & connected module readiness
+POST	/detect-spill	Module 1 — Upload SAR TIFF, get hazard polygon, type, area & confidence
+POST	/trace-origin	Module 2 (oil) — Run backward drift simulation from a detection polygon
+POST	/attribute-vessel	Module 3 (oil) — Match candidate vessels against the source trajectory
+POST	/score-route-risk	Module 3 (iceberg) — Score a planned route against a forecasted iceberg hazard
+POST	/find-safe-path	Module 4 (iceberg) — Recommend the safest route around forecasted hazards
+POST	/run-full-pipeline	Full end-to-end pipeline execution, auto-branching by detected hazard type
 
-Full interactive API reference at /docs once the backend is running.
+Full interactive API reference available at /docs once the backend is running.
 
 🧰 Tech Stack
 Layer	Technology
 Detection	PyTorch, segmentation_models_pytorch (ResNet-34 U-Net), hazard classifier CNN, rasterio, OpenCV
-Drift & Forecasting	OpenDrift (backward hindcast + forward forecast), NetCDF, CMEMS / ECMWF
-Oil Attribution	pandas, GeoPandas, Shapely, NOAA MarineCadastre AIS data
+Drift & Forecasting	OpenDrift (backward hindcast + forward forecast), NetCDF, CMEMS / ECMWF ocean-current & wind data
+Oil Vessel Attribution	pandas, GeoPandas, Shapely, NOAA MarineCadastre AIS data
 Iceberg Route Risk & Navigation	GeoPandas, Shapely, NetworkX (graph-based safe-path routing)
 Backend	FastAPI, Uvicorn, Pydantic
 Database	PostgreSQL, psycopg2, PostGIS, JSONB
@@ -228,21 +258,13 @@ Frontend	Vite, HTML/CSS/JavaScript, Leaflet-style map rendering
 Forensic Export	html2pdf.js, Web Crypto API (SHA-256), qrcode.js
 Deployment	Render (backend), Vercel (frontend)
 🛠️ Troubleshooting
-PowerShell execution policy error (Windows) — Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass before activating the venv.
-Port conflicts — run backend on another port via uvicorn main:app --port 8080 and update VITE_API_URL accordingly.
-Model weights — both unet_spill_best.pth and iceberg_classifier_best.pth are included in the repo root; the backend auto-loads both at startup.
-Database errors — the app runs fully without PostgreSQL, just without persistent incident/route storage.
-🔒 Security
-No secrets in source control — database credentials, API keys, and connection strings are read from environment variables (.env, excluded via .gitignore); only .env.example templates with placeholder values are committed.
-Parameterized database queries — all PostgreSQL inserts/queries use parameterized statements (psycopg2 with %s placeholders), not string-formatted SQL, to prevent injection.
-Input validation at the API boundary — FastAPI endpoints use Pydantic models to validate and type-check all incoming request data before it reaches any detection, drift, attribution, or routing logic.
-File upload validation — uploaded SAR imagery is checked for valid format/content before processing, rejecting malformed or oversized files.
-CORS scoped for deployment — the backend's CORS policy is restricted to the deployed frontend origin in production rather than left fully open.
-Tamper-evident reporting — forensic PDF exports are sealed with a client-side SHA-256 hash and QR-verifiable case ID, so any report can be checked for post-generation tampering.
-No credentials or personal data in logs — application logs record operational events (detections, pipeline runs) without exposing database credentials or sensitive request payloads.
+PowerShell execution policy error (Windows) — Run Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass before activating the virtual environment.
+Port 8000 or 5173 already in use — Run the backend on a different port: uvicorn main:app --port 8080, and update VITE_API_URL in ocean-trace-frontend/.env accordingly.
+Pretrained weights check — unet_spill_best.pth and iceberg_classifier_best.pth are already included in the repository root; the backend automatically detects and loads both on startup.
+Database connection errors — Ensure PostgreSQL is running locally and credentials in .env match your local setup; the app runs fully without a database, just without persistent storage.
 🔮 Future Scope
-Live global AIS traffic integration for continuous maritime monitoring.
-Extending the hazard classifier to additional SAR look-alike categories (algal blooms, biogenic films) for even lower false-positive rates.
+Live global vessel traffic integration via real-time AIS streaming (e.g. AISstream.io) for continuous maritime monitoring beyond historical incident review.
+Extension of the hazard classifier to additional SAR look-alike categories (algal blooms, biogenic films) for even lower false-positive rates.
 Deployment against live Antarctic and Indian Ocean satellite coverage as a real-time regional monitoring roadmap.
 👥 Team
 
