@@ -166,7 +166,9 @@ This is not two disparate projects merged together — it is a deliberate archit
 * **Schema Validation:** Strict Pydantic input models validating all API requests before execution.
 * **SAR Image Verification:** Pre-inference sanity checks verifying GeoTIFF SAR characteristics and backscatter ranges.
 * **Tamper-Evident Dossiers:** SHA-256 hash sealing on generated evidence certificates.
-
+* **ENABLED BASIC TO ADVANCED FIREWALLS **
+* **INTERMEDIATE VULNERIBILITIES FREE SUCH AS XSS, IDOR , PATCHING , TAMPERING , PROTECTING THE CONFEDENTIAL_REPORTS**
+*  **ADDED 2-OAUTH , TIME OUT OPT SYSTEM  , JWT TOKEN , CSRF TOKEN ADDED**
 ---
 
 ## 🚀 Setup & Execution Guide
