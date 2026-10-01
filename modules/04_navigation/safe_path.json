@@ -1,0 +1,95 @@
+{
+  "contract_version": "1.0",
+  "mode": "safe_path_planning",
+  "status": "SUCCESS",
+  "start_point": [
+    72.35,
+    18.85
+  ],
+  "end_point": [
+    72.65,
+    18.85
+  ],
+  "total_distance_km": 38.47,
+  "direct_distance_km": 31.57,
+  "detour_percentage": 21.9,
+  "estimated_risk_score": 0.179,
+  "recommended_waypoints": [
+    [
+      72.35,
+      18.85
+    ],
+    [
+      72.38797,
+      18.87593
+    ],
+    [
+      72.44493,
+      18.92983
+    ],
+    [
+      72.55884,
+      18.92983
+    ],
+    [
+      72.6158,
+      18.87593
+    ],
+    [
+      72.65,
+      18.85
+    ]
+  ],
+  "hazards_evaluated": 3,
+  "hazards_avoidance_summary": [
+    {
+      "hazard_id": "ICEBERG-ALPHA",
+      "initial_location": [
+        72.45,
+        18.85
+      ],
+      "forecast_centroid": [
+        72.45,
+        18.85
+      ],
+      "min_clearance_km": 6.66,
+      "inside_68_percent_zone": false,
+      "inside_95_percent_zone": false,
+      "safety_margin_maintained": true,
+      "verdict": "SAFELY_AVOIDED"
+    },
+    {
+      "hazard_id": "ICEBERG-BRAVO",
+      "initial_location": [
+        72.5,
+        18.88
+      ],
+      "forecast_centroid": [
+        72.5,
+        18.88
+      ],
+      "min_clearance_km": 5.55,
+      "inside_68_percent_zone": false,
+      "inside_95_percent_zone": false,
+      "safety_margin_maintained": true,
+      "verdict": "SAFELY_AVOIDED"
+    },
+    {
+      "hazard_id": "ICEBERG-CHARLIE",
+      "initial_location": [
+        72.55,
+        18.84
+      ],
+      "forecast_centroid": [
+        72.55,
+        18.84
+      ],
+      "min_clearance_km": 7.73,
+      "inside_68_percent_zone": false,
+      "inside_95_percent_zone": false,
+      "safety_margin_maintained": true,
+      "verdict": "SAFELY_AVOIDED"
+    }
+  ],
+  "explanation": "================================================================================\nOCEANTRACE MODULE 4: SAFE PATH PLANNING REPORT\n================================================================================\nRoute Status:                OPTIMIZED SAFE PASSAGE (6 waypoints)\nTotal Navigational Distance: 38.47 km (Direct: 31.57 km, Detour: +21.9%)\nTarget Safety Margin:        5.0 km buffer\nComposite Route Risk Score:  0.179 / 1.000\n--------------------------------------------------------------------------------\nHAZARD AVOIDANCE SUMMARY:\n  \u2022 ICEBERG-ALPHA: [SAFELY_AVOIDED] Min Clearance: 6.66 km | Inside 68% Zone: NO | Safety Buffer Maintained: YES\n  \u2022 ICEBERG-BRAVO: [SAFELY_AVOIDED] Min Clearance: 5.55 km | Inside 68% Zone: NO | Safety Buffer Maintained: YES\n  \u2022 ICEBERG-CHARLIE: [SAFELY_AVOIDED] Min Clearance: 7.73 km | Inside 68% Zone: NO | Safety Buffer Maintained: YES\n\nNAVIGATION REASONING & DETOUR ANALYSIS:\nA proactive tactical detour of +21.9% (+6.90 km) was introduced to navigate around high-probability iceberg drift clusters, ensuring the vessel strictly maintains a minimum clearance of 5.55 km from all active drift uncertainty envelopes.\n================================================================================"
+}

@@ -1,0 +1,57 @@
+{
+  "contract_version": "1.0",
+  "mode": "route_risk_assessment",
+  "hazard_type": "iceberg",
+  "overall_verdict": "High",
+  "overall_risk_score": 0.999,
+  "min_distance_to_hazard_km": 0.02,
+  "closest_segment_index": 2,
+  "in_uncertainty_zone": true,
+  "segments": [
+    {
+      "segment_index": 1,
+      "start_point": [
+        72.4,
+        18.85
+      ],
+      "end_point": [
+        72.46,
+        18.85
+      ],
+      "segment_length_km": 6.31,
+      "min_distance_km": 0.23,
+      "closest_step_hours": 1.0,
+      "in_68_percent_ellipse": true,
+      "in_95_percent_ellipse": true,
+      "risk_score": 0.993,
+      "risk_category": "High",
+      "explanation": "CRITICAL: Segment passes directly through the 68% iceberg uncertainty ellipse (closest approach 0.23 km at T+1.0h)."
+    },
+    {
+      "segment_index": 2,
+      "start_point": [
+        72.46,
+        18.85
+      ],
+      "end_point": [
+        72.52,
+        18.85
+      ],
+      "segment_length_km": 6.31,
+      "min_distance_km": 0.02,
+      "closest_step_hours": 1.0,
+      "in_68_percent_ellipse": true,
+      "in_95_percent_ellipse": true,
+      "risk_score": 0.999,
+      "risk_category": "High",
+      "explanation": "CRITICAL: Segment passes directly through the 68% iceberg uncertainty ellipse (closest approach 0.02 km at T+1.0h)."
+    }
+  ],
+  "hazard_metadata": {
+    "observation_time": "2026-08-31T14:00:00",
+    "forecast_time": "2026-09-01T14:00:00",
+    "forecast_hours": 24.0,
+    "safety_margin_km": 5.0
+  },
+  "narrative_explanation": "================================================================================\nOCEANTRACE VOYAGE RISK ASSESSMENT REPORT (ICEBERG HAZARD BRANCH)\n================================================================================\nOverall Route Verdict:       HIGH RISK (Composite Score: 1.00 / 1.00)\nMinimum Clearance Distance:  0.02 km (at Route Segment 2)\nRecommended Safety Margin:   5.0 km\nTarget Hazard:               Iceberg (Forecast Horizon: 24.0h)\n--------------------------------------------------------------------------------\nEXECUTIVE SUMMARY & NAVIGATION ADVICE:\nThe proposed voyage plan intersects the high-probability dispersion zone of the tracked iceberg. Segment 2 breaches the 68% spatial covariance ellipse with a closest approach of 0.02 km. REROUTING IS STRONGLY RECOMMENDED to avoid potential hull collision or heavy drift pack ice.\n\nSEGMENT-BY-SEGMENT BREAKDOWN:\n  \u2022 Segment 1 (6.3 km): [HIGH] Min dist: 0.23 km (T+1.0h) | Score: 0.99 | CRITICAL: Segment passes directly through the 68% iceberg uncertainty ellipse (closest approach 0.23 km at T+1.0h).\n  \u2022 Segment 2 (6.3 km): [HIGH] Min dist: 0.02 km (T+1.0h) | Score: 1.00 | CRITICAL: Segment passes directly through the 68% iceberg uncertainty ellipse (closest approach 0.02 km at T+1.0h).\n================================================================================"
+}
